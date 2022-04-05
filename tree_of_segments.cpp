@@ -29,7 +29,7 @@ void build (int v, int l, int r, vector<int> &t, vector<int> &a) {
 	build(2 * v + 2, m, r, t, a); //правая граница
 	t[v] = t[2 * v + 1]+ t[2 * v + 2];
 }
-int get_max(int v, int l, int r, vector<int>& tr, int ql, int qr) {
+int get_sum(int v, int l, int r, vector<int>& tr, int ql, int qr) {
 	if (l >= ql && r <= qr) // если мы нашли нужный отрезок
 	{
 		return tr[v];
@@ -39,7 +39,7 @@ int get_max(int v, int l, int r, vector<int>& tr, int ql, int qr) {
 		return -1e9; // возвращаем любое значение не влияющие на результат; в RMQ это -1e9
 	}
 	int m = (l + r) / 2; // если все норм идем по левой и правой ветке
-	return get_max(2 * v + 1, l, m, tr, ql, qr)+ get_max(2 * v + 2, m, r, tr, ql, qr);
+	return get_sum(2 * v + 1, l, m, tr, ql, qr)+ get_sum(2 * v + 2, m, r, tr, ql, qr);
 }
 
 void update(int v, int l, int r, vector<int>& it, int qidx, int qvalue) {
@@ -70,7 +70,7 @@ int main() {
 		cin >> A[i];
 	}
   build(0, 0, n, it, A); 
-  get_max(0, 0, n, it, l - 1, r);
+  get_sum(0, 0, n, it, l - 1, r);
   update(0, 0, n, it, idx - 1, val);
 
 }
