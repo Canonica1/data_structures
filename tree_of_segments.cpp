@@ -113,12 +113,12 @@ int main() {
 
 			int l, r;
 			cin >> l >> r;
-			cout << getsum(0, 0, n, l - 1, r - 1) << endl;
+			cout << getsum(0, 0, n-1, l - 1, r - 1) << endl;
 		}
 		else {
 			int i, val;
 			cin >> i >> val;
-			update(0, 0, n, i-1, val);
+			update(0, 0, n-1, i-1, val);
 		}
 
 
