@@ -16,19 +16,29 @@
 #include <cassert> 
 #include <chrono> 
 using namespace std;
+#define ifthen(x,y,z) (x ? y : z)
+#define all(a) (a).begin(), (a).end()
+#define sz(a) ((long long)(a).size());
+#define endl '\n'
+#define pb push_back
+#define ve vector
+#define vf(a,n)for (int i = 0; i < (n); i++)cin >> (a)[i];
 
-int N = 1001;
-void build (int v, int l, int r, vector<int> &t, vector<int> &a) {
-	if (r == l)
-	{
-		t[v] = a[l];
-		return;
-	}
-	int m = (l + r) / 2;
-	build(2 * v + 1, l, m, t, a); //левая граница
-	build(2 * v + 2, m + 1, r, t, a); //правая граница
-	t[v] = t[2 * v + 1]+ t[2 * v + 2];
-}
+typedef long long ll;
+typedef ve<int> vi;
+typedef ve<ll> vl;
+typedef pair<int, int> pi;
+typedef pair<ll, ll> pl;
+
+const int N = 2e5 + 11;
+vector<pair<int, int>> q[N];
+int ans[N];
+int tree[N * 4];
+
+struct Pair {
+	int val;
+	int idx;
+};
 void update(int p, int l, int r, int x, int val) {
 	if (x < l || x > r)
 	{
@@ -45,6 +55,17 @@ void update(int p, int l, int r, int x, int val) {
 	update(p * 2 + 2, mid + 1, r, x, val);
 	
 	tree[p] = tree[p * 2 + 1] + tree[p * 2 + 2];
+}
+void build(int v, int l, int r, vector<int>& a) {
+	if (r == l)
+	{
+		tree[v] = a[l];
+		return;
+	}
+	int m = (l + r) / 2;
+	build(2 * v + 1, l, m, a); //левая граница
+	build(2 * v + 2, m  + 1, r, a); //правая граница
+	tree[v] = tree[2 * v + 1] + tree[2 * v + 2];
 }
 ll getsum(int p, int l, int r, int ql, int qr) {
 	if (ql >r || qr < l)
@@ -77,17 +98,35 @@ int get(int p, int l, int r, int x) {
 int main() {
 	ios::sync_with_stdio(0);
 	cin.tie(0);
-	cout.tie(0);
 	int n;
 	cin >> n;
-	vector<int> it(4 * n); // в дереве может быть максимум 4n элементов
-  vector<int> A(n);
-	for (int i = 0; i < n; i++)
-	{
-		cin >> A[i];
+	ve<int>a(n);
+	vf(a, n);
+	build(0, 0, n-1, a);
+	int q;
+	cin >> q;
+	while (q--) {
+		char c;
+		cin >> c;
+		if (c == 's')
+		{
+
+			int l, r;
+			cin >> l >> r;
+			cout << getsum(0, 0, n, l - 1, r - 1) << endl;
+		}
+		else {
+			int i, val;
+			cin >> i >> val;
+			update(0, 0, n, i-1, val);
+		}
+
+
 	}
-  build(0, 0, n, it, A); 
-  get_sum(0, 0, n, it, l - 1, r);
-  update(0, 0, n, it, idx - 1, val);
+
+
+	
+
+
 
 }
