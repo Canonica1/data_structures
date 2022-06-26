@@ -34,3 +34,15 @@ void buildMi(ll v, ll l, ll r, vector<ll>& a) {
 	buildMi(2 * v + 2, m + 1, r, a); //правая граница
 	treeMi[v] = min(treeMi[2 * v + 1], treeMi[2 * v + 2]);
 }
+pair<ll, ll> getmin(ll p, ll l, ll r, ll ql, ll qr) {
+	if (ql > r || qr < l)
+	{
+		return { 1e9, 0 };
+	}
+	if (ql <= l && r <= qr)
+	{
+		return treeMi[p];
+	}
+	ll mid = (l + r) / 2;
+	return min(getmin(2 * p + 1, l, mid, ql, qr), getmin(2 * p + 2, mid + 1, r, ql, qr));
+}
