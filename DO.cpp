@@ -1,5 +1,5 @@
-ve<int> T(N * 4) ;
-void build(int p,int l,int r,ve<int> &a) {
+vector<int> T(N * 4) ;
+void build(int p,int l,int r,vector<int> &a) {
 	if (r == l + 1)
 	{
 		T[p] = a[l]; return;
