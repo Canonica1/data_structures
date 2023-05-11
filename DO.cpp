@@ -27,7 +27,7 @@ void update(int p, int l, int r, int idx, int val) {
     T[p] = merge(T[p * 2 + 1], T[p * 2 + 2]);
 
 }
-int get_sum(int p, int l ,int r, int ql, int qr) {
+int get(int p, int l ,int r, int ql, int qr) {
     if (r <= ql || l >=qr)
     {
         return 0;
@@ -37,6 +37,6 @@ int get_sum(int p, int l ,int r, int ql, int qr) {
         return T[p];
     }
     int mid = (l + r) / 2;
-    return merge(get_sum(p  *2 +1, l, mid, ql, qr), get_sum(p * 2 + 2, mid, r, ql, qr));
+    return merge(get(p  *2 +1, l, mid, ql, qr), get(p * 2 + 2, mid, r, ql, qr));
 
 }
