@@ -123,5 +123,9 @@ struct SegmentTreeMass
 	{
 		add(0, 0, n, ql, qr, val);
 	}
-
+ 
+	void add(int idx, int val)
+	{
+		add(0, 0, n, idx, idx + 1, val);
+	}
 };
