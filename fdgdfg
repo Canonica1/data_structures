@@ -1,0 +1,229 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+#define ld long double
+#define int long long
+#define sz(x) (int)(x).size()
+#define all(a) (a).begin(), (a).end()
+#define rall(a) (a).rbegin(), (a).rend()
+#define gen(a, b) uniform_int_distribution<int>(a, b)(rnd)
+template<typename T, typename U> bool imin(T& a, U b){if (a > b) {a = b;return true;} return false;}
+template<typename T, typename U> bool imax(T& a, U b){if (a < b){a = b; return true;} return false;}
+#define F_OR(i, a, b, s) for (int i=(a); (s)>0?i<(b):i>=(b); i+=(s))
+#define F_OR1(e) F_OR(i, 0, e, 1)
+#define F_OR2(i, e) F_OR(i, 0, e, 1)
+#define F_OR3(i, b, e) F_OR(i, b, e, 1)
+#define F_OR4(i, b, e, s) F_OR(i, b, e, s)
+#define GET5(a, b, c, d, e, ...) e
+#define F_ORC(...) GET5(__VA_ARGS__, F_OR4, F_OR3, F_OR2, F_OR1)
+#define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
+
+const int INF = 1e18;
+int mod = 1e9 + 7;
+const ld EPS = 1e-6;
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+#ifndef ONPC
+#define endl '\n'
+#endif
+const int leftBorder = 1e5 + 10;
+struct Node {
+    int sum, x, l, r,add;
+    Node() {
+        l = -1, r = -1;
+        add = 0;
+        x = -1;
+        sum = 0;
+    }
+};
+struct DoSearchPlace {
+    vector<Node> T;
+    void DO(int p) {
+        if(T[p].l == -1) {
+            T[p].l = T.size();
+            T.emplace_back();
+        }
+        if(T[p].r == -1) {
+            T[p].r = T.size();
+            T.emplace_back();
+        }
+    }
+    void apply(int p, int col, int l, int r) {
+        T[p].add += col;
+        T[p].sum += (r - l) * col;
+    }
+    void push(int p, int l, int r) {
+        int m = (l + r) >> 1;
+        apply(T[p].l, T[p].add, l,m);
+        apply(T[p].r, T[p].add, m,r);
+        T[p].add = 0;
+    }
+    void rem(int p, int l, int r, int idx) {
+        if(l + 1 == r) {
+            T[p].sum = 0;
+            return;
+        }
+        DO(p);
+        int m = (l + r) >> 1;
+        push(p,l, r);
+        if(m > idx) {
+            rem(T[p].l, l,m,idx);
+        } else {
+            rem(T[p].r, m,r,idx);
+        }
+        T[p].sum =T[T[p].l].sum +T[T[p].r].sum;
+    }
+    void add(int p, int l, int r, int idx, int who) {
+        if(l + 1 == r) {
+            T[p].sum = 1;
+            T[p].x  = who;
+            return;
+        }
+        DO(p);
+        int m = (l + r) >> 1;
+        push(p,l, r);
+        if(m > idx) {
+            add(T[p].l, l,m,idx,who);
+        } else {
+            add(T[p].r, m,r,idx,who);
+        }
+        T[p].sum =T[T[p].l].sum +T[T[p].r].sum;
+    }
+    void addSeg(int p, int l, int r, int ql, int qr, int col) {
+        DO(p);
+        int m = (l + r) >> 1;
+        if(l >= qr || ql >= r) {
+            return;
+        }
+        if(l >= ql && qr >= r) {
+            apply(p,col,l,r);
+            return;
+        }
+        push(p,l,r);
+        addSeg(T[p].l, l,m,ql,qr,col);
+        addSeg(T[p].r, m,r,ql,qr,col);
+        T[p].sum =T[T[p].l].sum +T[T[p].r].sum;
+    }
+    int get(int p, int l, int r, int ql, int qr) {
+        DO(p);
+        int m = (l + r) >> 1;
+        if(l >= qr || ql >= r) {
+            return 0;
+        }
+        if(l >= ql && qr >= r) {
+            return T[p].sum;
+        }
+        push(p,l,r);
+        return get(T[p].l, l,m,ql,qr) + get(T[p].r, m,r,ql,qr);
+    }
+    int seach(int p, int l, int r, int idx) {
+        if(l + 1 == r) {
+            if(T[p].x == -1) {
+                return l - leftBorder + 1;
+            }
+            return T[p].x;
+        }
+        DO(p);
+        int m = (l + r) >> 1;
+        push(p,l, r);
+        if(T[T[p].l].sum >= idx) {
+            return seach(T[p].l, l,m,idx);
+        } else {
+            return seach(T[p].r, m,r,idx - T[T[p].l].sum);
+        }
+    }
+};
+int N = 1e9 + 100100;
+DoSearchPlace T;
+map<int, int> M, rM, score;
+int go(int x) {
+    if(M.count(x)) {
+        return M[x];
+    } else {
+        return x;
+    }
+}
+int ungo(int x) {
+    if(rM.count(x)) {
+        return rM[x];
+    } else {
+        return x;
+    }
+}
+int get_score(int x) {
+    if(score.count(x)) {
+        return score[x];
+    } else {
+        return x + leftBorder - 1;
+    }
+}
+int getPlace(int x) {
+    int sc = get_score(x);
+    int place = T.get(0,0,N,0,sc + 1);
+    return place;
+}
+void solve(){
+    int n,q;
+    cin >> n >> q;
+    T.T.emplace_back();
+    int L = leftBorder;
+    int R = L + n;
+    T.addSeg(0,0,N,L,R,1);
+    int A = 0;
+    for(int i = 0; i < q; i++) {
+        int t;
+        cin >> t;
+        if(t == 1) {
+            int x,y;
+            cin >> x >> y;
+            //x-=A;
+            //y -= A;
+            x = go(x);
+            M[y] = x;
+            rM[x] = y;
+            int place = getPlace(x);
+            cout << place << endl;
+            A = place;
+        } else if(t == 2) {
+            int x;
+            cin >> x;
+            //x -= A;
+            x =go(x);
+            int place = getPlace(x);
+            cout << place << endl;
+            A = place;
+            T.rem(0,0,N, get_score(x));
+            T.add(0,0,N, --L,x);
+            score[x] = L;
+        } else if(t == 3) {
+            int x;
+            cin >> x;
+            //x -= A;
+            x =go(x);
+            int place = getPlace(x);
+            cout << place << endl;
+            A = place;
+            T.rem(0,0,N, get_score(x));
+            T.add(0,0,N, ++R,x);
+            score[x] = R;
+        } else {
+            int x;
+            cin >> x;
+            //x -= A;
+            int ans = T.seach(0,0,N,x);
+            ungo(ans);
+            cout << ans << endl;
+            A = ans;
+        }
+    }
+}
+
+signed main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+#ifdef ONPC
+    freopen("test.txt", "r", stdin);
+#endif
+    int tt = 1;
+    while(tt--) solve();
+}
