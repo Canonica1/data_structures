@@ -1,118 +1,76 @@
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
 struct Node {
-    int size, x, y;
-    Node *l = 0;
-    Node *r = 0;
-
-    Node(int x, int y) {
-        this->x = x;
-        this->y = y;
-        this->size = 1;
+    int prior, sz;
+    bool rev;
+    Node *l = 0, *r = 0;
+    int x;
+    Node(int X) {
+        x = X;
+        prior = rnd();
+        sz = 1;
+        rev = 0;
     }
 };
-
-typedef Node *pNode;
-
-void update(pNode &t) {
-    if (!t) return;
-    t->size = 1;
-    if (t->l) {
-        t->size += t->l->size;
+Node* root = 0;
+int size(Node* p) {
+    if (p) {
+        return p->sz;
     }
-    if (t->r) {
-        t->size += t->r->size;
-    }
+    return 0;
 }
-
-void split(pNode t, int idx, pNode &l, pNode &r) {
-    if (!t) {
-        l = 0;
-        r = 0;
-        update(t);
+void push(Node* p) {
+    if (!p)
         return;
-    }
-    int left_size = 0;
-    if (t->l) {
-        left_size = t->l->size;
-    }
-    if (left_size < idx) {
-        split(t->r, idx - left_size - 1, t->r, r);
-        l = t;
-        update(l);
-    } else {
-        split(t->l, idx, l, t->l);
-        r = t;
-        update(r);
-    }
-    update(t);
-}
-
-void merge(pNode &t, pNode l, pNode r) {
-    if (!l) {
-        t = r;
-    } else if (!r) {
-        t = l;
-    } else if (l->y < r->y) {
-        merge(l->r, l->r, r);
-        t = l;
-    } else {
-        merge(r->l, l, r->l);
-        t = r;
-    }
-    update(t);
-}
-
-void print(pNode t) {
-    if (!t) return;
-    print(t->l);
-    cout << t->x << " ";
-    print(t->r);
-}
-
-void add(pNode &t, pNode a, int idx) {
-    if (!t) {
-        t = a;
-        update(t);
-        return;
-    }
-    int left_size = 0;
-    if (t->l) {
-        left_size = t->l->size;
-    }
-    if (a->y < t->y) {
-        split(t, idx, a->l, a->r);
-        t = a;
-    } else {
-        if (left_size >= idx) {
-            add(t->l, a, idx);
-        } else {
-            add(t->r, a, idx - left_size - 1);
+    if (p->rev) {
+        swap(p->l, p->r);
+        if (p->l) {
+            p->l->rev ^= 1;
+        }
+        if (p->r) {
+            p->r->rev ^= 1;
         }
     }
-    update(t);
+    p->rev = 0;
 }
-
-int del(pNode &t, int idx) {
-    if (!t) assert(0);
-    int left_size = 0;
-    if (t->l) {
-        left_size = t->l->size;
+void upd(Node* v) {
+    v->sz = 1 + size(v->l) + size(v->r);
+}
+Node* merge(Node* l, Node* r) {
+    push(l);
+    push(r);
+    if (!l)
+        return r;
+    if (!r)
+        return l;
+    if (l->prior > r->prior) {
+        l->r = merge(l->r, r);
+        upd(l);
+        return l;
+    } else {
+        r->l = merge(l, r->l);
+        upd(r);
+        return r;
     }
-    if (idx == left_size) {
-        int P = t->x;
-        merge(t, t->l, t->r);
-        update(t);
-        return P;
-    } else{
-        if (left_size > idx) {
-            update(t);
-            int dd= del(t->l, idx);
-            update(t);
-            return  dd;
-        }else {
-            update(t);
-            int dd = del(t->r, idx - left_size - 1);
-            update(t);
-            return dd;
-        }
+}
+pair<Node*, Node*> split(Node* p, int x) {
+    push(p);
+    if (!p)
+        return {0, 0};
+    if (size(p->l) + 1 <= x) {
+        auto [l, r] = split(p->r, x - size(p->l) - 1);
+        p->r = l;
+        upd(p);
+        return {p, r};
+    } else {
+        auto [l, r] = split(p->l, x);
+        p->l = r;
+        upd(p);
+        return {l, p};
     }
+}
+void reverse(int l, int r) {
+    auto [T, R] = split(root, r);
+    auto [L, M] = split(T, l);
+    M->rev ^= 1;
+    root = merge(L, merge(M, R));
 }
