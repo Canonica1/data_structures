@@ -25,6 +25,11 @@ struct sufmass {
         }
         int l = 0;
         for (int ii = 0; ii < n - 1; ++ii) {
+            if (pos[ii] == 0) {
+                l--;
+                l = max<int>(0, l);
+                continue;
+            }
             int I = ii;
             int J = P[pos[ii] - 1];
             while (s[(I + l) % n] == s[(J + l) % n]) {
