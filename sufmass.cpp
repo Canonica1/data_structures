@@ -32,7 +32,7 @@ struct sufmass {
             }
             lcp[pos[ii]] = l;
             l--;
-            l = max(0, l);
+            l = max<int>(0, l);
         }
     }
     void build(string S) {
