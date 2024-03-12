@@ -8,7 +8,7 @@ struct Fenwick {
 
     void init(int n_) {
         n = n_;
-        a.assign(n, int{});
+        a.assign(n, {});
     }
 
     void add(int x, const int &v) {
